@@ -1,0 +1,17 @@
+{
+  "name": "daily",
+  "version": "1.0.0",
+  "description": "leetcode daily",
+  "main": "daily.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Yang Lifu",
+  "license": "ISC",
+  "repository": {},
+  "dependencies": {
+    "@datastructures-js/priority-queue": "^4.1.2",
+    "lodash": "^4.17.20"
+  }
+}
