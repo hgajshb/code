@@ -343,9 +343,30 @@ var fib = function (n) {
     return dp[n];
 };
 
-let arr = [1, 2, 2, 1, 1, 3];
-arr = [1, 2];
-arr = [-3, 0, 1, -3, 1, 1, 1, -3, 10, 0]
+/**
+ * @param {string} s
+ * @return {number[][]}
+ */
+var largeGroupPositions = function (s) {
+    let i = 0;
+    const ans = [];
+    while (i < s.length) {
+        let c = s[i];
+        let j = i;
+        while (j < s.length && c === s[j]) {
+            j++;
+        }
+        if (j - i >= 3)
+            ans.push([i, j - 1]);
+        i = j;
+    }
+    return ans;
+};
 
-console.log(uniqueOccurrences(arr));
+let s = "abbxxxxzzy";
+s = "abc";
+s = "abcdddeeeeaabbbcd"
+//s = "aba"
+
+console.log(largeGroupPositions(s));
 

@@ -1,7 +1,6 @@
 <?php
 class Solution
 {
-
     /**
      * @param integer [] $stones
      * @return integer 
@@ -698,33 +697,7 @@ class Solution
         }
         return $cntA == $cntB;
     }
-    /**
-     * @param integer [] $apples
-     * @param integer [] $days
-     * @return integer 
-     */
-    function eatenApples($apples, $days)
-    {
-        $n = count($apples);
-        $ans = $last = 0;
-        for ($i = 0; $i < $n; ++$i) {
-            if ($apples[$i] > $days[$i]) {
-                $t = min($apples[$i], $days[$i]);
-                $m = max($t, $last);
-            } elseif ($apples[$i] < $days[$i]) {
-                $t = min($apples[$i], $days[$i]);
-                $m = min($days[$i], $t + $last);
-            } else {
-                $m = max($last, $apples[$i]);
-            }
-            if ($m > 0) {
-                $ans++;
-                $last = $m - 1;
-            } else $last = 0;
-        }
-        $ans += $m - 1;
-        return $ans;
-    }
+
     /**
      * @param String $s
      * @param String $t
@@ -994,12 +967,134 @@ class Solution
         }
         return $ans % (1e9 + 7);
     }
+
+
+
+    /**
+     * @param integer [] $apples
+     * @param integer [] $days
+     * @return integer 
+     */
+    function eatenApples($apples, $days)
+    {
+        $queue = new splPriorityQueue;
+        $queue->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
+        $eatNum = 0;
+        for ($i = 0; $i < count($apples) || !$queue->isEmpty(); $i++) {
+            while (!$queue->isEmpty() && $queue->top()['priority'] == $i) {
+                $queue->extract();
+            }
+            if ($i < count($apples) && $apples[$i] > 0) {
+                $queue->insert($apples[$i], $days[$i] + $i);
+            }
+            if (!$queue->isEmpty()) {
+                $tmp = $queue->extract();
+                echo json_encode($tmp), "\n";
+                $eatNum++;
+                $tmp['data'] -= 1;
+                if ($tmp['data'])
+                    $queue->insert($tmp['data'], $tmp['priority']);
+            }
+        }
+        return $eatNum;
+    }
+    /**
+     * @param integer[] $nums
+     * @return integer
+     */
+    function waysToSplit($nums)
+    {
+        // $n = count($nums);
+        // $pS[0] = $nums[0];
+        // for ($i = 1; $i < $n; $i++)
+        //     $pS[$i] = $pS[$i - 1] + $nums[$i];
+        // $ret = 0;
+        // for ($i = 0; $i < $n - 1; $i++) {
+        //     if ($pS[$i] * 3 > $pS[$n - 1]) break;
+        //     $l = $i + 1;
+        //     $r = $n - 2;
+        //     while ($l <= $r) {
+        //         $m = (int)(($l + $r) / 2);
+        //         if ($pS[$n - 1] - $pS[$m] >= $pS[$m] - $pS[$i])
+        //             $l = $m + 1;
+        //         else $r = $m - 1;
+        //     }
+        //     $ll = $i + 1;
+        //     $rr = $n - 1;
+        //     while ($ll <= $rr) {
+        //         $m = (int)(($ll + $rr) / 2);
+        //         if ($pS[$m] - $pS[$i] >= $pS[$i]) $rr = $m - 1;
+        //         else $ll = $m + 1;
+        //     }
+        //     $ret += $r - $ll + 1;
+        // }
+        // return $ret % (1e9 + 7);
+        $n = count($nums);
+        $MOD = 1e9 + 7;
+        $s[0] = $nums[0];
+        for ($i = 1; $i < $n; ++$i)
+            $s[$i] = $s[$i - 1] + $nums[$i];
+        $ans = 0;
+        $l = $r = 1;
+        for ($m = 1; $m < $n - 1; ++$m) {
+            $l = max($l, $m);
+            $r = max($r, $m);
+            while (
+                $r < $n - 1 &&
+                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m - 1]
+            )
+                $r++;
+            while ($l < $n - 2 && $s[$l] - $s[$m - 1] < $s[$m - 1])
+                $l++;
+            if (
+                $r < $n - 1 &&
+                $l <= $r &&
+                $s[$l] - $s[$m - 1] >= $s[$m - 1] &&
+                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m - 1]
+            )
+                $ans += $r - $l + 1;
+        }
+        return $ans % $MOD;
+    }
+    /**
+     * @param String $s
+     * @return Integer[][]
+     */
+    function largeGroupPositions($s)
+    {
+        $n = strlen($s);
+        $i = 0;
+        $ans = [];
+        while ($i < $n) {
+            $c = $s[$i];
+            $j = $i;
+            while ($j < $n && $c == $s[$j]) $j++;
+            if ($j - $i >= 3) $ans[] = [$i, $j - 1];
+            $i = $j;
+        }
+        return $ans;
+    }
+
+    /**
+     * @param Integer[][] $grid
+     * @return Integer[]
+     */
+    function findBall($grid)
+    {
+        $rows = count($grid);
+        $cols = count($grid[0]);
+        for ($i = 0; $i < $rows; ++$i) {
+            for ($j = 0; $j < $cols; ++$j) {
+                //if()
+            }
+        }
+    }
 }
 
 //data
-//$deliciousness = [1, 3, 5, 7, 9];
-//$deliciousness = [1, 1, 1, 3, 3, 3, 7];
-$deliciousness = [149, 107, 1, 63, 0, 1, 6867, 1325, 5611, 2581, 39, 89, 46, 18, 12, 20, 22, 234];
-
+$nums = [1, 1, 1];
+$nums = [1, 2, 2, 2, 5, 0];
+//$nums = [3, 2, 1];
+$s = "abcdddeeeeaabbbcd";
 $ns = new Solution;
-echo json_encode($ns->countPairs($deliciousness));
+echo json_encode($ns->largeGroupPositions($s));
