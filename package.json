@@ -13,5 +13,8 @@
   "dependencies": {
     "@datastructures-js/priority-queue": "^4.1.2",
     "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3"
   }
 }

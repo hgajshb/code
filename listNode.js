@@ -20,3 +20,21 @@ var middleNode = function (head) {
     return slow;
 };
 
+/**
+ * @param {ListNode} node
+ * @return {void} Do not return anything, modify node in-place instead.
+ */
+var deleteNode = function (node) {
+    node.val = node.next.val;
+    node.next = node.next.next;
+};
+
+let head = new ListNode(4);
+head.next = new ListNode(5);
+head.next.next = new ListNode(9);
+head.next.next.next = new ListNode(11);
+deleteNode(head.next);
+while (head) {
+    console.log(head.val);
+    head = head.next;
+}

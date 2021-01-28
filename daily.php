@@ -1,4 +1,68 @@
 <?php
+class UnionFind6
+{
+    private $parents = [];
+    private $rank = [];
+    private $count;
+
+    public function __construct($size)
+    {
+        for ($i = 0; $i < $size; $i++) {
+            $this->parents[$i] = $i;
+            $this->rank[$i] = 1;
+        }
+        $this->count = $size;
+    }
+
+    public function getCount()
+    {
+        return $this->count;
+    }
+
+    public function size()
+    {
+        // TODO: Implement size() method.
+        return sizeof($this->parents);
+    }
+
+    public function isConnected($p, $q)
+    {
+        // TODO: Implement isConnected() method.
+        return $this->find($p) == $this->find($q);
+    }
+
+    public function union($p, $q)
+    {
+        // TODO: Implement union() method.
+        $pRoot = $this->find($p);
+        $qRoot = $this->find($q);
+        if ($pRoot == $qRoot)
+            return;
+
+        if ($this->rank[$pRoot] > $this->rank[$qRoot]) {
+            $this->parents[$qRoot] = $pRoot;
+        } else if ($this->rank[$pRoot] < $this->rank[$qRoot]) {
+            $this->parents[$pRoot] = $qRoot;
+        } else {
+            $this->parents[$qRoot] = $pRoot;
+            $this->rank[$pRoot] += 1;
+        }
+        $this->count--; //融合一对，朋友圈减1
+    }
+
+    protected function find($p)
+    {
+        if ($p < 0 || $p >= $this->size()) {
+            throw new Exception("下标越界");
+        }
+
+        if ($this->parents[$p] != $p) {
+            $this->parents[$p] = $this->find($this->parents[$p]);
+        }
+
+        return $this->parents[$p];
+    }
+}
 class Solution
 {
     /**
@@ -266,7 +330,7 @@ class Solution
             $stack[] = $s[$i];
             $i++;
         }
-        return join($stack);
+        return join("", $stack);
     }
     /**
      * @param String $S
@@ -466,7 +530,7 @@ class Solution
             }
         }
         if ($i == 0) return -1;
-        $str = join(array_merge(
+        $str = join("", array_merge(
             array_slice($arr, 0, $i),
             array_reverse(array_slice($arr, $i))
         ));
@@ -998,6 +1062,206 @@ class Solution
         }
         return $eatNum;
     }
+
+    /**
+     * @param String $s
+     * @return Integer[][]
+     */
+    function largeGroupPositions($s)
+    {
+        $n = strlen($s);
+        $i = 0;
+        $ans = [];
+        while ($i < $n) {
+            $c = $s[$i];
+            $j = $i;
+            while ($j < $n && $c == $s[$j]) $j++;
+            if ($j - $i >= 3) $ans[] = [$i, $j - 1];
+            $i = $j;
+        }
+        return $ans;
+    }
+
+    /**
+     * @param Integer[][] $grid
+     * @return Integer[]
+     */
+    function findBall($grid)
+    {
+        $rows = count($grid);
+        $cols = count($grid[0]);
+        for ($i = 0; $i < $rows; ++$i) {
+            for ($j = 0; $j < $cols; ++$j) {
+                //if()
+            }
+        }
+    }
+
+    /**
+     * @param String[][] $equations
+     * @param Float[] $values
+     * @param String[][] $queries
+     * @return Float[]
+     */
+    function calcEquation($equations, $values, $queries)
+    {
+        $nvars = 0;
+        $variables = $edges = $ret = [];
+        $n = count($equations);
+        for ($i = 0; $i < $n; $i++) {
+            if (!isset($variables[$equations[$i][0]])) {
+                $variables[$equations[$i][0]] = $nvars++;
+            }
+            if (!isset($variables[$equations[$i][1]])) {
+                $variables[$equations[$i][1]] = $nvars++;
+            }
+        }
+        for ($i = 0; $i < $n; $i++) {
+            $va = $variables[$equations[$i][0]];
+            $vb = $variables[$equations[$i][1]];
+            $edges[$va][] = [$vb, $values[$i]];
+            $edges[$vb][] = [$va, 1.0 / $values[$i]];
+        }
+        foreach ($queries as $q) {
+            $result = -1.0;
+            if (isset($variables[$q[0]]) && isset($variables[$q[1]])) {
+                $ia = $variables[$q[0]];
+                $ib = $variables[$q[1]];
+                if ($ia == $ib) $result = 1.0;
+                else {
+                    $points = [];
+                    $points[] = $ia;
+                    $ratios = array_fill(0, $nvars, -1.0);
+                    $ratios[$ia] = 1.0;
+                    while (!empty($points) && $ratios[$ib] < 0) {
+                        $x = array_pop($points);
+                        foreach ($edges[$x] as list($y, $val)) {
+                            if ($ratios[$y] < 0) {
+                                $ratios[$y] = $ratios[$x] * $val;
+                                $points[] = $y;
+                            }
+                        }
+                    }
+                    $result = $ratios[$ib];
+                }
+            }
+            $ret[] = $result;
+        }
+        return $ret;
+    }
+    /**
+     * @param String[] $strs
+     * @return String
+     */
+    function longestCommonPrefix($strs)
+    {
+        $n = count($strs);
+        if ($n == 0) return "";
+        $ans = "";
+        for ($i = 0; $i < strlen($strs[0]); ++$i) {
+            for ($j = 1; $j < $n; ++$j) {
+                if (!isset($strs[$j][$i])) return $ans;
+                if ($strs[$j][$i] != $strs[0][$i]) return $ans;
+            }
+            $ans .= $strs[0][$i];
+        }
+        return $ans;
+    }
+
+    /**
+     * @param int $n
+     * @param int $k
+     * @return int
+     */
+    function paintingPlan($n, $k)
+    {
+        if ($n * $n == $k) return 1;
+        $ans = 0;
+        for ($i = 0; $i <= $n; ++$i) {
+            for ($j = 0; $j <= $n; ++$j) {
+                if (($i + $j) * $n - $i * $j == $k) {
+                    $ans += $this->C($n, $i) * $this->C($n, $j);
+                }
+            }
+        }
+        return $ans;
+    }
+    function C($n, $m)
+    {
+        if ($n == $m) return 1;
+        if ($n == 0) return 0;
+        return $this->C($n - 1, $m) + $this->C($n - 1, $m - 1);
+    }
+    /**
+     * @param Integer[] $arr
+     * @param Integer $k
+     * @return Integer
+     */
+    function findKthPositive($arr, $k)
+    {
+        $start = $i = $cnt = 0;
+        while ($cnt < $k) {
+            if ($i < count($arr) && $arr[$i] == $start + 1) $i++;
+            else $cnt++;
+            $start++;
+        }
+        return $start;
+    }
+
+    /**
+     * @param Integer[][] $isConnected
+     * @return Integer
+     */
+    function findCircleNum($isConnected)
+    {
+        $len = count($isConnected);
+        $ans = 0;
+        $visited = [];
+        for ($i = 0; $i < $len; ++$i) {
+            if (!isset($visited[$i])) {
+                $this->dfs($i, $isConnected, $visited, $len);
+                $ans++;
+            }
+        }
+        return $ans;
+    }
+    function dfs($n, $isConnected, &$visited, $len)
+    {
+        for ($i = 0; $i < $len; ++$i) {
+            if ($isConnected[$n][$i] && !isset($visited[$i])) {
+                $visited[$i] = 1;
+                $this->dfs($i, $isConnected, $visited, $len);
+            }
+        }
+    }
+
+    /**
+     * @param String $s
+     * @return Integer
+     */
+    function lengthOfLongestSubstring($s)
+    {
+        $left = $right = $cnt = 0;
+        $pos = [];
+        for ($i = 0; $i < strlen($s); ++$i) {
+            if (isset($pos[$s[$i]]) && $pos[$s[$i]] >= $left) {
+                $left = $pos[$s[$i]] + 1;
+            }
+            $pos[$s[$i]] = $i;
+            //echo substr($s, $left, $i - $left + 1), "\n";
+            $cnt = max($cnt, $i - $left + 1);
+        }
+        return $cnt;
+    }
+    /**
+     * @param String $s
+     * @param Integer $n
+     * @return String
+     */
+    function reverseLeftWords($s, $n)
+    {
+        return substr($s, 0, $n) . substr($s, $n);
+    }
     /**
      * @param integer[] $nums
      * @return integer
@@ -1040,61 +1304,784 @@ class Solution
             $l = max($l, $m);
             $r = max($r, $m);
             while (
-                $r < $n - 1 &&
-                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m - 1]
+                $r < $n  &&
+                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m]
             )
                 $r++;
-            while ($l < $n - 2 && $s[$l] - $s[$m - 1] < $s[$m - 1])
+            while ($l < $n && $s[$l] - $s[$m] < $s[$m])
                 $l++;
             if (
-                $r < $n - 1 &&
+                $r < $n  &&
                 $l <= $r &&
-                $s[$l] - $s[$m - 1] >= $s[$m - 1] &&
-                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m - 1]
+                $s[$l] - $s[$m - 1] >= $s[$m] &&
+                $s[$n - 1] - $s[$r] >= $s[$r] - $s[$m]
             )
                 $ans += $r - $l + 1;
         }
         return $ans % $MOD;
     }
     /**
-     * @param String $s
-     * @return Integer[][]
+     * @param String[] $word1
+     * @param String[] $word2
+     * @return Boolean
      */
-    function largeGroupPositions($s)
+    function arrayStringsAreEqual($word1, $word2)
     {
-        $n = strlen($s);
-        $i = 0;
-        $ans = [];
+        return array_reduce($word1, function ($a, $b) {
+            return $a . $b;
+        }) === array_reduce($word2, function ($a, $b) {
+            return $a . $b;
+        });
+    }
+    /**
+     * @param int $n
+     * @param int $start
+     * @return Integer
+     */
+    function xorOperation($n, $start)
+    {
+        $ans = $i = 0;
         while ($i < $n) {
-            $c = $s[$i];
-            $j = $i;
-            while ($j < $n && $c == $s[$j]) $j++;
-            if ($j - $i >= 3) $ans[] = [$i, $j - 1];
-            $i = $j;
+            $ans ^= $start;
+            $i++;
+            $start += 2;
+        }
+        return $ans;
+    }
+    /**
+     * @param int[] $prices
+     * @return Integer
+     */
+    function maxProfit1($prices)
+    {
+        $n = count($prices);
+        $buy1 = -$prices[0];
+        $sell1 = 0;
+        $buy2 = -$prices[0];
+        $sell2 = 0;
+        for ($i = 1; $i < $n; ++$i) {
+            $buy1 = max($buy1, -$prices[$i]);
+            $sell1 = max($sell1, $buy1 + $prices[$i]);
+            $buy2 = max($buy2, $sell1 - $prices[$i]);
+            $sell2 = max($sell2, $buy2 + $prices[$i]);
+        }
+        return $sell2;
+    }
+
+    /**
+     * @param Integer $n
+     * @return Integer
+     */
+    function totalMoney($n)
+    {
+        $week = $ans = $i = 0;
+        while ($i < $n) {
+            for ($j = 1; $j <= 7; ++$j) {
+                $ans += $week + $j;
+                $i++;
+                if ($i > 0 && $i % 7 == 0) $week++;
+                if ($i == $n) break;
+            }
         }
         return $ans;
     }
 
     /**
-     * @param Integer[][] $grid
+     * @param int[] $encoded
+     * @param int $first
      * @return Integer[]
      */
-    function findBall($grid)
+    function decode($encoded, $first)
     {
-        $rows = count($grid);
-        $cols = count($grid[0]);
-        for ($i = 0; $i < $rows; ++$i) {
-            for ($j = 0; $j < $cols; ++$j) {
-                //if()
+        $ans = [];
+        $tmp = $first;
+        $n = count($encoded);
+        for ($i = 0; $i < $n; ++$i) {
+            $ans[$i] = $first ^ $encoded[$i];
+            $first = $ans[$i];
+        }
+        return array_merge([$tmp], $ans);
+    }
+
+    /**
+     * @param Integer[] $source
+     * @param Integer[] $target
+     * @param Integer[][] $allowedSwaps
+     * @return Integer
+     */
+    function minimumHammingDistance($source, $target, $allowedSwaps)
+    {
+        $len = sizeof($allowedSwaps);
+        $uf = new UnionFind6($len);
+        foreach ($allowedSwaps as $a)
+            $uf->union($a[0], $a[1]);
+
+        $ans = 0;
+        for ($i = 0; $i < count($source); ++$i) {
+            $pos = array_search($source[$i], $target);
+            if ($pos === $i) continue;
+            if ($pos === false || !$uf->isConnected($i, $pos)) $ans++;
+        }
+        return $ans;
+    }
+
+    /**
+     * @param int[] $nums
+     * @return String[]
+     */
+    function summaryRanges($nums)
+    {
+        $ans = [];
+        $i = 0;
+        $n = count($nums);
+        while ($i < $n) {
+            $cnt = 0;
+            while ($i + 1 < $n && $nums[$i] + 1 == $nums[$i + 1]) {
+                $i++;
+                $cnt++;
+            }
+            if ($cnt == 0) $ans[] = (string)($nums[$i]);
+            else $ans[] = $nums[$i - $cnt] . "->" . $nums[$i];
+            $i++;
+        }
+        return $ans;
+    }
+    function topSort(&$deg, &$graph, &$items)
+    {
+        $Q = [];
+        foreach ($items as $item)
+            if ($deg[$item] == 0) $Q[] = $item;
+        $res = [];
+        while (!empty($Q)) {
+            $u = array_shift($Q);
+            $res[] = $u;
+            foreach ($graph[$u] as $v)
+                if (--$deg[$v] == 0) $Q[] = $v;
+        }
+        return count($res) == count($items) ? $res : [];
+    }
+
+    /**
+     * @param int $n
+     * @param int $m
+     * @param int[] $group
+     * @param int[][] $beforeItems
+     * @return int[]
+     */
+    function sortItems($n, $m, $group, $beforeItems)
+    {
+    }
+
+    /**
+     * @param String $s
+     * @param int $x
+     * @param int $y
+     * @return Integer
+     */
+    function maximumGain($s, $x, $y)
+    {
+        $res = 0;
+        $big = $x > $y ? "ab" : "ba";
+        $small = $big == "ab" ? "ba" : "ab";
+        $str = $this->getScore($s, $big, max($x, $y), $res);
+        $this->getScore($str, $small, min($x, $y), $res);
+        return $res;
+    }
+    function getScore($s, $target, $score, &$res)
+    {
+        $stack = [];
+        for ($i = 0; $i < strlen($s); ++$i) {
+            if ($stack && end($stack) . $s[$i] == $target) {
+                array_pop($stack);
+                $res += $score;
+            } else $stack[] = $s[$i];
+        }
+        return join("", $stack);
+    }
+
+    /**
+     * @param int $n
+     * @return Integer[]
+     */
+    function constructDistancedSequence($n)
+    {
+        $ret = array_fill(0, 2 * $n - 1, 0);
+        $used = array_fill(0, 21, 0);
+        $this->dfs2(0, $ret, $used, $n);
+        return $ret;
+    }
+    function dfs2($pos, &$ret, &$used, $n)
+    {
+        if ($pos == 2 * $n - 1) return true;
+        if ($ret[$pos] > 0)
+            return $this->dfs2($pos + 1, $ret, $used, $n);
+        for ($d = $n; $d > 0; --$d) {
+            if ($used[$d] > 0) continue;
+            if ($d > 1 && ($pos + $d >= 2 * $n - 1 || $ret[$pos + $d] > 0)) continue;
+            $used[$d] = 1;
+            $ret[$pos] = $d;
+            if ($d > 1) $ret[$pos + $d] = $d;
+            if ($this->dfs2($pos + 1, $ret, $used, $n)) return true;
+            $used[$d] = 0;
+            $ret[$pos] = 0;
+            if ($d > 1) $ret[$pos + $d] = 0;
+        }
+        return false;
+    }
+
+    /**
+     * @param int[] $A
+     * @return Boolean[]
+     */
+    function prefixesDivBy5($A)
+    {
+        $start = 0;
+        $ans = [];
+        for ($i = 0; $i < count($A); ++$i) {
+            $start = (2 * $start + $A[$i]) % 5;
+            $ans[] = ($start == 0) ? true : false;
+        }
+        return $ans;
+    }
+
+    /**
+     * @param int[] $nums
+     * @param int $x
+     * @return Integer
+     */
+    function minOperations($nums, $x)
+    {
+        // $um = [];
+        // $ans = PHP_INT_MAX;
+
+        // $um[0] = -1;
+        // $sum = 0;
+        // for ($i = 0; $i < count($nums); $i++) {
+        //     $sum += $nums[$i];
+        //     $um[$sum] = $i;
+        // }
+
+        // $sum = 0;
+        // if (isset($um[$x])) {
+        //     $ans = min($ans, $um[$x] + 1);
+        // }
+        // for ($i = count($nums) - 1; $i >= 0; $i--) {
+        //     $sum += $nums[$i];
+        //     if (isset($um[$x - $sum])) {
+        //         $cnt = count($nums) - $i + $um[$x - $sum] + 1;
+        //         if ($cnt > count($nums)) continue;
+        //         $ans = min($ans, $cnt);
+        //     }
+        // }
+
+        // return $ans == PHP_INT_MAX ? -1 : $ans;
+        $sum = array_sum($nums);
+        $diff = $sum - $x;
+        if ($diff < 0) return -1;
+        if ($diff == 0) return count($nums);
+        $step = -1;
+        $s = 0;
+        $left = $right = 0;
+        while ($left < count($nums)) {
+            if ($right < count($nums)) $s += $nums[$right++];
+            while ($s > $diff && $left < count($nums))
+                $s -= $nums[$left++];
+            if ($s == $diff) $step = max($step, $right - $left);
+            if ($right == count($nums)) $left++;
+        }
+        return $step == -1 ? -1 : count($nums) - $step;
+    }
+
+    /**
+     * @param Integer[][] $stones
+     * @return Integer
+     */
+    function removeStones($stones)
+    {
+        $n = count($stones);
+        $ans = 0;
+        $visited = array_fill(0, $n, 0);
+        for ($i = 0; $i < $n; ++$i) {
+            if ($visited[$i]) continue;
+            else $ans++;
+            $this->dfs3($n, $stones, $stones[$i], $visited);
+        }
+        return $n - $ans;
+    }
+
+    function dfs3($n, $stones, $pair, &$visited)
+    {
+        for ($i = 0; $i < $n; ++$i) {
+            if ($visited[$i]) continue;
+            if ($stones[$i][0] == $pair[0] || $stones[$i][1] == $pair[1]) {
+                $visited[$i] = 1;
+                $this->dfs3($n, $stones, $stones[$i], $visited);
             }
         }
     }
+
+    /**
+     * @param Integer[][] $rectangles
+     * @return Integer
+     */
+    function countGoodRectangles($rectangles)
+    {
+        $ans = [];
+        foreach ($rectangles as $r) {
+            $ans[] = min($r);
+        }
+        $max = max($ans);
+        return array_count_values($ans)[$max];
+    }
+
+    /**
+     * @param int[] $nums
+     * @return Integer
+     */
+    function tupleSameProduct($nums)
+    {
+        $n = count($nums);
+        $map = [];
+        for ($i = 0; $i < $n - 1; ++$i) {
+            for ($j = $i + 1; $j < $n; ++$j) {
+                $k = $nums[$i] * $nums[$j];
+                $map[$k] = isset($map[$k]) ? $map[$k] + 1 : 1;
+            }
+        }
+        $ans = 0;
+        foreach ($map as $p => $cnt) {
+            if ($cnt > 1) {
+                $ans += $this->Cnm($cnt, 2) * 8;
+            }
+        }
+        return $ans;
+    }
+    function Cnm($n, $m)
+    {
+        if ($m == 1) return $n;
+        if ($n == 0) return 0;
+        return $this->Cnm($n - 1, $m) + $this->Cnm($n - 1, $m - 1);
+    }
+
+    /**
+     * @param String[][] $accounts
+     * @return String[][]
+     */
+    function accountsMerge($accounts)
+    {
+    }
+
+    /**
+     * @param int[][] $matrix
+     * @return Integer
+     */
+    function largestSubmatrix($matrix)
+    {
+        $n = count($matrix);
+        $m = count($matrix[0]);
+        for ($i = 1; $i < $n; ++$i)
+            for ($j = 0; $j < $m; ++$j)
+                if ($matrix[$i][$j])
+                    $matrix[$i][$j] = $matrix[$i - 1][$j] + 1;
+
+        $area = 0;
+        for ($i = 0; $i < $n; ++$i) {
+            rsort($matrix[$i]);
+            for ($j = 0; $j < $m; ++$j)
+                $area = max($area, ($j + 1) * $matrix[$i][$j]);
+        }
+        return $area;
+    }
+
+    /**
+     * @param int[][] $points
+     * @return Integer
+     */
+    function minCostConnectPoints($points)
+    {
+        // $pq = new SplPriorityQueue;
+        // $pq->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
+        // $pq->insert(0, 0);
+        // $ans = 0;
+        // $n = count($points);
+        // $vi = array_fill(0, $n, false);
+        // while ($pq->count() && $n > 0) {
+        //     $a = $pq->extract();
+        //     $p1 = $a['data'];
+        //     $dis = $a['priority'];
+        //     if ($vi[$p1]) continue;
+        //     $ans -= $dis;
+        //     $vi[$p1] = true;
+        //     $n--;
+        //     for ($p2 = 0; $p2 < count($points); $p2++) {
+        //         if ($vi[$p2]) continue;
+        //         $d = abs($points[$p1][0] - $points[$p2][0]) +
+        //             abs($points[$p1][1] - $points[$p2][1]);
+        //         $pq->insert($p2, -$d);
+        //     }
+        // }
+        // return $ans;
+        $n = count($points);
+        $nearest = array_fill(0, $n, PHP_INT_MAX);
+        $nearest[0] = 0;
+        $tmp = $points[0];
+        unset($points[0]);
+        while ($points) {
+            $min = PHP_INT_MAX;
+            foreach ($points as $k => $v) {
+                $d = abs($v[0] - $tmp[0]) + abs($v[1] - $tmp[1]);
+                $nearest[$k] = min($nearest[$k], $d);
+                $min = min($min, $nearest[$k]);
+                if ($min == $nearest[$k]) $next = $k;
+            }
+            $tmp = $points[$next];
+            unset($points[$next]);
+        }
+        //array_shift($nearest);
+        echo json_encode($nearest);
+        return array_sum($nearest);
+    }
+
+    /**
+     * @param Integer[] $nums
+     * @param Integer $val
+     * @return Integer
+     */
+    function removeElement(&$nums, $val)
+    {
+        $i = 0;
+        for ($j = 0; $j < count($nums); $j++) {
+            if ($nums[$j] != $val) {
+                $nums[$i] = $nums[$j];
+                $i++;
+            }
+        }
+        return $i;
+    }
+    /**
+     * @param String $s
+     * @return String
+     */
+    function longestPalindrome($s)
+    {
+        if (strlen($s) < 2) return $s;
+        $start = $end = 0;
+        for ($i = 0; $i < strlen($s); ++$i) {
+            [$left1, $right1] = $this->expand($s, $i, $i);
+            [$left2, $right2] = $this->expand($s, $i, $i + 1);
+            if ($right1 - $left1 > $end - $start) {
+                $start = $left1;
+                $end = $right1;
+            }
+            if ($right2 - $left2 > $end - $start) {
+                $start = $left2;
+                $end = $right2;
+            }
+        }
+        return substr($s, $start, $end - $start + 1);
+    }
+
+    function expand($s, $left, $right)
+    {
+        while ($left >= 0 && $right < strlen($s) && $s[$left] == $s[$right]) {
+            $left--;
+            $right++;
+        }
+        return [$left + 1, $right - 1];
+    }
+
+    /**
+     * @param int[] $nums
+     * @return Integer
+     */
+    function maximumProduct($nums)
+    {
+        sort($nums);
+        $n = count($nums);
+        return max($nums[0] * $nums[1] * end($nums), end($nums) * $nums[$n - 2] * $nums[$n - 3]);
+    }
+    /**
+     * @param String $s
+     * @param Integer $numRows
+     * @return String
+     */
+    function convert($s, $numRows)
+    {
+        $n = strlen($s);
+        $min = min($numRows, $n);
+        $down = false;
+        $str = array_fill(0, $min, "");
+        $curRow = 0;
+        for ($i = 0; $i < $n; ++$i) {
+            $str[$curRow] .= $s[$i];
+            if ($curRow == 0 || $curRow == $min - 1) $down = !$down;
+            $curRow += $down ? 1 : -1;
+        }
+        $ans = "";
+        foreach ($str as $ss) $ans .= $ss;
+        return $ans;
+    }
+    /**
+     * @param string $word1
+     * @param string $word2
+     * @return Boolean
+     */
+    function closeStrings($word1, $word2)
+    {
+        [$n1, $n2] = [strlen($word1), strlen($word2)];
+        if ($n1 != $n2) return false;
+        $word1 = str_split($word1);
+        $word2 = str_split($word2);
+        $c1 = array_values(array_count_values($word1));
+        $c2 = array_values(array_count_values($word2));
+        sort($c1);
+        sort($c2);
+        $s1 = array_unique($word1);
+        $s2 = array_unique($word2);
+        sort($s1);
+        sort($s2);
+        return $c1 == $c2 && $s1 == $s2;
+    }
+    /**
+     * @param Integer[][] $mat
+     * @return Integer[][]
+     */
+    function diagonalSort($mat)
+    {
+        $m = count($mat);
+        $n = count($mat[0]);
+        $map = [];
+        for ($i = 1 - $n; $i < $m; ++$i) $map[$i] = [];
+        for ($i = 0; $i < $m; ++$i) {
+            for ($j = 0; $j < $n; ++$j) {
+                $map[$j - $i][] = $mat[$i][$j];
+            }
+        }
+        foreach ($map as $k => $v) {
+            rsort($v);
+            $map[$k] = $v;
+        }
+        $res = $mat;
+        for ($i = 0; $i < $m; ++$i) {
+            for ($j = 0; $j < $n; ++$j) {
+                $res[$i][$j] = array_pop($map[$j - $i]);
+            }
+        }
+        return $res;
+    }
+    /**
+     * @param int[] $gain
+     * @return Integer
+     */
+    function largestAltitude($gain)
+    {
+        $start = 0;
+        $max = 0;
+        foreach ($gain as $g) {
+            $start += $g;
+            $max = max($max, $start);
+        }
+        return $max;
+    }
+    /**
+     * @param String $time
+     * @return String
+     */
+    function maximumTime($time)
+    {
+        $h = "";
+        $b = 0;
+        for ($i = 50; $i >= 48; --$i) {
+            for ($j = 57; $j >= 48; --$j) {
+                $h = ($time[0] == '?' ? chr($i) : $time[0]) . ($time[1] == '?' ? chr($j) : $time[1]);
+                if ($h <= '23') {
+                    $b = 1;
+                    break;
+                }
+            }
+            if ($b) break;
+        }
+
+        $m = "";
+        $b = 0;
+        for ($i = 53; $i >= 48; --$i) {
+            for ($j = 57; $j >= 48; --$j) {
+                $m = ($time[3] == '?' ? chr($i) : $time[3]) . ($time[4] == '?' ? chr($j) : $time[4]);
+                if ($m <= '59') {
+                    $b = 1;
+                    break;
+                }
+            }
+            if ($b) break;
+        }
+        return $h . ':' . $m;
+    }
+
+    /**
+     * @param int $n
+     * @param int[][] $languages
+     * @param int[][] $friendships
+     * @return int
+     */
+    function minimumTeachings($n, $languages, $friendships)
+    {
+        $lanCnt = array_fill(0, $n, 0);
+        $visited = array_fill(0, count($languages), false);
+        $cnt = 0;
+        foreach ($friendships as $fs) {
+            $a = $fs[0] - 1;
+            $b = $fs[1] - 1;
+            if (array_intersect($languages[$a], $languages[$b]) == []) {
+                if (!$visited[$a]) {
+                    foreach ($languages[$a] as $l) {
+                        $lanCnt[$l - 1]++;
+                    }
+                    $cnt++;
+                    $visited[$a] = true;
+                }
+                if (!$visited[$b]) {
+                    foreach ($languages[$b] as $l) {
+                        $lanCnt[$l - 1]++;
+                    }
+                    $cnt++;
+                    $visited[$b] = true;
+                }
+            }
+        }
+        return $cnt - max($lanCnt);
+    }
+
+
+    /**
+     * @param Integer[][] $dominoes
+     * @return Integer
+     */
+    function numEquivDominoPairs($dominoes)
+    {
+        $ans = 0;
+        $freq = [];
+        foreach ($dominoes as $d) {
+            //sort($d);
+            //$k = join("", $d);
+            $k = min($d) . max($d);
+            $freq[$k] = isset($freq[$k]) ? $freq[$k] + 1 : 1;
+            $ans += $freq[$k] - 1;
+        }
+        return $ans;
+    }
+
+    /**
+     * @param int[] $encoded
+     * @return int[]
+     */
+    function decode2($encoded)
+    {
+        $n = count($encoded) + 1;
+        $all = $rest = 0;
+        for ($i = 1; $i <= $n; ++$i) $all ^= $i;
+        for ($i = 1; $i < $n; $i += 2) $rest ^= $encoded[$i];
+        $ans[0] = $all ^ $rest;
+        for ($i = 1; $i < $n; ++$i) {
+            $ans[$i] = $ans[$i - 1] ^ $encoded[$i - 1];
+        }
+        return $ans;
+    }
+
+    /**
+     * @param string $num1
+     * @param string $num2
+     * @return String
+     */
+    function addStrings($num1, $num2)
+    {
+        $i = strlen($num1) - 1;
+        $j = strlen($num2) - 1;
+        $ans = "";
+        $carry = 0;
+        while ($i >= 0 || $j >= 0) {
+            $sum = ($i >= 0 ? $num1[$i] : 0) + ($j >= 0 ? $num2[$j] : 0) + $carry;
+            if ($sum >= 10) {
+                $sum -= 10;
+                $carry = 1;
+            } else $carry = 0;
+            $ans .= $sum;
+            $i--;
+            $j--;
+        }
+        if ($carry) $ans .= "1";
+        return strrev($ans);
+    }
+
+    /**
+     * @param String $haystack
+     * @param String $needle
+     * @return Integer
+     */
+    function strStr($haystack, $needle)
+    {
+        $m = strlen($needle);
+        $n = strlen($haystack);
+        if (!$m) return 0;
+        $next = array_fill(0, $m, 0);
+        $next[0] = -1;
+        $j = -1;
+        for ($i = 0; $i < $m - 1; $i++) {
+            while ($j >= 0 && $needle[$j] != $needle[$i]) $j = $next[$j];
+            $j++;
+            $next[$i + 1] = $j;
+        }
+        $j = 0;
+        for ($i = 0; $i < $n; $i++) {
+            while ($j >= 0 && $haystack[$i] != $needle[$j]) $j = $next[$j];
+            $j++;
+            if ($j == $m) return $i - $m + 1;
+        }
+        return -1;
+    }
+    /**
+     * @param int $n
+     * @return Integer
+     */
+    function concatenatedBinary($n)
+    {
+        $shift = $ans = 0;
+        for ($i = 1; $i < $n + 1; ++$i) {
+            if (($i & ($i - 1)) == 0) $shift++;
+            $ans = (($ans << $shift) + $i) % (1e9 + 7);
+            echo $ans, "\n";
+        }
+        return $ans;
+    }
+
+    /**
+     * @param String $a
+     * @param String $b
+     * @return Integer
+     */
+    function minCharacters($a, $b)
+    {
+        $fA = $fB = $fC = array_fill(0, 26, 0);
+        for ($i = 0; $i < strlen($a); ++$i)
+            $fA[ord($a[$i]) - 97]++;
+        for ($i = 0; $i < strlen($b); ++$i)
+            $fB[ord($b[$i]) - 97]++;
+        $c = $a . $b;
+        for ($i = 0; $i < strlen($c); ++$i)
+            $fC[ord($c[$i]) - 97]++;
+        $ans = array_sum($fC) - max($fC);
+        for ($i = 1; $i < 26; ++$i) {
+            $ans = min($ans, array_sum(array_slice($fA, 0, $i)) + array_sum(array_slice($fB, $i)));
+            $ans = min($ans, array_sum(array_slice($fB, 0, $i)) + array_sum(array_slice($fA, $i)));
+        }
+        return $ans;
+    }
 }
 
+
 //data
-$nums = [1, 1, 1];
-$nums = [1, 2, 2, 2, 5, 0];
-//$nums = [3, 2, 1];
-$s = "abcdddeeeeaabbbcd";
 $ns = new Solution;
-echo json_encode($ns->largeGroupPositions($s));
+$a = "aba";
+$b = "caa";
+$a = "dabadd";
+$b = "cda";
+echo json_encode($ns->minCharacters($a, $b)), "\n";

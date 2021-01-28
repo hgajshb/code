@@ -6,9 +6,10 @@ class ListNode
 {
     public $val = 0;
     public $next = null;
-    function __construct($val)
+    function __construct($val = 0, $next = null)
     {
         $this->val = $val;
+        $this->next = $next;
     }
 }
 
@@ -85,19 +86,68 @@ class Solution
         }
         return $ret->next;
     }
+
+    /**
+     * @param ListNode $head
+     * @param int $k
+     * @return ListNode
+     */
+    function swapNodes($head, $k)
+    {
+        $slow = $fast = $head;
+        $idx = 1;
+        while ($idx < $k) {
+            $fast = $fast->next;
+            $idx++;
+        }
+        $node = $fast;
+        while ($fast->next) {
+            $fast = $fast->next;
+            $slow = $slow->next;
+        }
+        $tmp = $node->val;
+        $node->val = $slow->val;
+        $slow->val = $tmp;
+        return $head;
+    }
+    /**
+     * @param ListNode $l1
+     * @param ListNode $l2
+     * @return ListNode
+     */
+    function addTwoNumbers($l1, $l2)
+    {
+        $first = $newL = new ListNode();
+        while (true) {
+            $sum = $l1->val + $l2->val;
+            if ($sum >= 10) {
+                $sum = $sum - 10;
+                $l1->next->val++;
+            }
+            $newL->val = $sum;
+            $l1 = $l1->next;
+            $l2 = $l2->next;
+            if (!$l1 && !$l2) {
+                break;
+            }
+            $newL->next = new ListNode;
+            $newL = $newL->next;
+        }
+        return $first;
+    }
 }
 //head = 1->4->3->2->5->2, x = 3
 //[1,2,3,3,4,4,5]
 $head = new ListNode(1);
-$head->next = new ListNode(1);
-$head->next->next = new ListNode(1);
-$head->next->next->next = new ListNode(2);
-$head->next->next->next->next = new ListNode(3);
+$head->next = new ListNode(2);
+$head->next->next = new ListNode(3);
+$head->next->next->next = new ListNode(4);
+$head->next->next->next->next = new ListNode(5);
 //$head->next->next->next->next->next = new ListNode(4);
 //$head->next->next->next->next->next->next = new ListNode(5);
 
 $ns = new Solution;
-$nhead = $ns->deleteDuplicates($head);
+$nhead = $ns->swapNodes($head, 2);
 while ($nhead) {
     echo $nhead->val;
     $nhead = $nhead->next;
