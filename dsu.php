@@ -338,12 +338,77 @@ class Solution
         }
         return $unionFind->getGroups();
     }
+    /**
+     * @param Integer[][] $grid
+     * @return Integer
+     */
+    function swimInWater($grid)
+    {
+        $n = count($grid);
+        $map = array_fill(0, $n * $n, 0);
+        for ($x = 0; $x < $n; ++$x)
+            for ($y = 0; $y < $n; ++$y)
+                $map[$x * $n + $y] = $grid[$x][$y];
+        $map = array_flip($map);
+        $dsu = new UnionSet($n * $n);
+        $directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+        for ($t = 0; $t < $n * $n; ++$t) {
+            $x = (int)($map[$t] / $n);
+            $y = $map[$t] % $n;
+            foreach ($directions as list($dx, $dy)) {
+                $nx = $x + $dx;
+                $ny = $y + $dy;
+                if ($nx >= 0 && $nx < $n && $ny >= 0 && $ny < $n && $grid[$nx][$ny] <= $t) {
+                    $dsu->union($x * $n + $y, $nx * $n + $ny);
+                }
+            }
+            if ($dsu->find(0) == $dsu->find($n * $n - 1)) return $t;
+        }
+        return -1;
+    }
+    /**
+     * @param String[] $strs
+     * @return Integer
+     */
+    function numSimilarGroups($strs)
+    {
+        $n = count($strs);
+        $strlen = strlen($strs[0]);
+        $dsu = new UnionSet($n);
+        for ($i = 0; $i < $n - 1; ++$i) {
+            for ($j = $i + 1; $j < $n; ++$j) {
+                $diff = 0;
+                for ($k = 0; $k < $strlen; ++$k)
+                    if ($strs[$i][$k] !== $strs[$j][$k]) $diff++;
+                if ($diff == 0 || $diff == 2)
+                    $dsu->union($i, $j);
+            }
+        }
+        return $dsu->getGroups();
+    }
+
+    /**
+     * @param Integer[][] $graph
+     * @return Boolean
+     */
+    function isBipartite($graph)
+    {
+        $n = count($graph);
+        $dsu = new UnionSet($n);
+        for ($i = 0; $i < $n; ++$i) {
+            foreach ($graph[$i] as $g)
+                if ($dsu->find($g) == $dsu->find($i))
+                    return false;
+            for ($j = 0; $j + 1 < count($graph[$i]); ++$j)
+                $dsu->union($graph[$i][$j], $graph[$i][$j + 1]);
+        }
+        return true;
+    }
 }
 
 
-$grid = [
-    "//",
-  "/ "
-];
+$graph = [[1, 2, 3], [0, 2], [0, 1, 3], [0, 2]];
+$graph = [[1, 3], [0, 2], [1, 3], [0, 2]];
+$graph = [[1], [0, 3], [3], [1, 2]];
 $ns = new Solution;
-echo json_encode($ns->regionsBySlashes($grid)), "\n";
+echo json_encode($ns->isBipartite($graph)), "\n";

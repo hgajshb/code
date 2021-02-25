@@ -67,7 +67,7 @@ class Solution
      * @param ListNode $head
      * @return ListNode
      */
-    function deleteDuplicates($head)
+    function deleteDuplicates_1($head)
     {
         if (!$head) return;
         $ret = $dummy = new ListNode(PHP_INT_MAX);
@@ -135,6 +135,70 @@ class Solution
         }
         return $first;
     }
+    /**
+     * @param ListNode $head
+     * @param Integer $k
+     * @return ListNode
+     */
+    function reverseKGroup($head, $k)
+    {
+        $copy = $new = new ListNode(0);
+        $arr = [];
+        while ($head) {
+            $arr[] = $head->val;
+            $head = $head->next;
+        }
+        $newarr = [];
+        for ($i = 0; $i < count($arr); ++$i) {
+            $slice = array_slice($arr, $i, $k);
+            if (count($slice) == $k) {
+                $slice = array_reverse($slice);
+            }
+            $newarr = array_merge($newarr, $slice);
+        }
+        foreach ($newarr as $n) {
+            $new->next = new ListNode($n);
+            $new = $new->next;
+        }
+        return $copy->next;
+    }
+    /**
+     * @param ListNode $head
+     * @return ListNode
+     */
+    function deleteDuplicates($head)
+    {
+        if (!$head) return;
+        $copy = $head;
+        while ($head) {
+            while ($head->next && $head->next->val == $head->val)
+                $head->next = $head->next->next;
+            $head = $head->next;
+        }
+        return $copy;
+    }
+
+    /**
+     * @param ListNode $head
+     * @param int $n
+     * @return ListNode
+     */
+    function removeNthFromEnd($head, $n)
+    {
+        $ret  = $dummy = new ListNode(0, $head);
+        $tot = $cnt = 0;
+        while ($head) {
+            $tot++;
+            $head = $head->next;
+        }
+        while ($dummy) {
+            if ($cnt == $tot - $n)
+                $dummy->next = $dummy->next->next;
+            $cnt++;
+            $dummy = $dummy->next;
+        }
+        return $ret->next;
+    }
 }
 //head = 1->4->3->2->5->2, x = 3
 //[1,2,3,3,4,4,5]
@@ -147,7 +211,8 @@ $head->next->next->next->next = new ListNode(5);
 //$head->next->next->next->next->next->next = new ListNode(5);
 
 $ns = new Solution;
-$nhead = $ns->swapNodes($head, 2);
+
+$nhead = $ns->removeNthFromEnd($head, 1);
 while ($nhead) {
     echo $nhead->val;
     $nhead = $nhead->next;
